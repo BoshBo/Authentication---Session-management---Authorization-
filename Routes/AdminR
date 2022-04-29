@@ -1,0 +1,16 @@
+const express = require("express");
+const router = express.Router();
+const {
+  getEmp,
+  getTask
+} = require("../controller/AdminC");
+
+const { JwtToken } = require("../middleware/empAUTH");
+
+const { onlyAdmin } = require("../middleware/Authorization");
+router//Only admin
+  .get("/Tasks", JwtToken, onlyAdmin, getTask)
+  .get("/Emp", JwtToken, onlyAdmin, getEmp)
+  .put("/Emp/:id", JwtToken, onlyAdmin);
+
+module.exports = router;

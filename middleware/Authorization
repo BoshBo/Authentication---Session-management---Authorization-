@@ -1,0 +1,13 @@
+const asyncHandler = require("express-async-handler");
+
+const onlyAdmin = asyncHandler(async (req, res, next) => {
+  if (req.emp.role !== "ADMIN") {
+    res.status(401);
+    throw new Error("Not Authorized, required Admin privileges ");
+  }
+  next();
+});
+
+module.exports = {
+  onlyAdmin,
+};

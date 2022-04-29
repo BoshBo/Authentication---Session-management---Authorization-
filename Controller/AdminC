@@ -1,0 +1,28 @@
+const asyncHandler = require("express-async-handler");
+const Emp = require("../model/EmpModle");
+const Tasks = require("../model/TaskModle");
+
+//only Admin  >> GET /api/admin/Emp
+const getEmp = asyncHandler(async (req, res) => {
+  const emp = await Emp.find({});
+  if (!emp) {
+    return res.status(404).send("No Employees Found");
+  }
+  res.status(200).json({ emp });
+});
+
+// only Admin  >> GET /api/admin/Tasks
+const getTask = asyncHandler(async (req, res) => {
+  const tasks = await Tasks.find({});
+  if (!tasks) {
+    return res.status(404).send("No projects Found");
+  }
+  res.status(200).json({ tasks });
+});
+
+
+
+module.exports = {
+  getEmp,
+  getTask
+};

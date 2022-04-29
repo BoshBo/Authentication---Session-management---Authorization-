@@ -1,0 +1,29 @@
+const mongoose = require("mongoose");
+
+const Schema = mongoose.Schema;
+
+const EmpSchema = new Schema({
+  name: {
+    type: String,
+    required: true,
+  },
+  Task_title: {
+    type: String,
+    required: true,
+  },
+  role: {
+    type: String,
+    default: "EMPLOYEE",
+  },
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  password: {
+    type: String,
+    required: true,
+  },
+});
+
+module.exports = mongoose.model("Emp", EmpSchema);

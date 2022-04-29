@@ -1,0 +1,17 @@
+const express = require("express");
+
+const router = express.Router();
+const {
+  registerEmp,
+  loginEmp,
+  getEmp,
+} = require("../controller/EmployeeC");
+
+const { protect } = require("../middleware/empAUTH");
+
+router
+  .post("/", registerEmp)
+  .post("/login", loginEmp)
+  .get("/info", protect, getEmp);
+
+module.exports = router;

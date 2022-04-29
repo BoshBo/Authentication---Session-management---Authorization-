@@ -1,0 +1,93 @@
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcryptjs");
+const asyncHandler = require("express-async-handler");
+const Emp = require("../model/EmpModle");
+const { json } = require("express/lib/response");
+
+
+// to register Employee >>(Post)  /api/Emp 
+const registerEmp = asyncHandler(async (req, res) => {
+  const { name, Task_title, email, password } = req.body;
+  if (!name || !Task_title || !email || !password) {
+    res.status(400);
+    throw new Error("please add all info");
+  }
+  const empExists = await Emp.findOne({ email });
+  if (empExists) {
+    res.status(400);
+    throw new Error("Employee already exists");
+  }
+
+  //add salt to password
+  const salt = await bcrypt.genSalt(10); 
+  const hashPassword = await bcrypt.hash(password, salt); 
+
+  //  Employee info to create 
+  const emp = await Emp.create({
+    name,
+    Task_title,
+    email,
+    password: hashPassword,
+  });
+  if (emp) {
+    res.status(201).json({
+      _id: emp.id,
+      name: emp.name,
+      emp_task: emp.Task_title,
+      email: emp.email,
+      token: genToken(emp._id),
+    });
+  } else {
+    res.status(400);
+    throw new Error("Invalid Employee Info");
+  }
+});
+
+
+// to login Employee >>(Post) /api/Emp/login 
+const loginEmp= asyncHandler(async (req, res) => {
+  const { name,email, password } = req.body;
+  const emp = await Emp.findOne({ email });
+  if (emp && (await bcrypt.compare(password, emp.password))) {
+    res.json({
+      _id: emp.id,
+      name: emp.name,
+      Task_title: emp.Task_title,
+      email: emp.email,
+      token: genToken(emp._id),
+    });
+  } else {
+    res.status(400);
+    throw new Error("Invalid Email or Password");
+  }
+
+  res.json({ message: "Login Employee" });
+});
+
+
+// to Get Emp Information >>(GET) /api/Emp/info 
+const getEmp = asyncHandler(async (req, res) => {
+  const { _id, name, Task_title, email } = await Emp.findById(
+    req.emp.id
+  );
+  res.status(200).json({
+    id: _id,
+    name,
+    Task_title,
+    email,
+  });
+});
+
+// Token Generation 
+const genToken = (id) => {
+  return jwt.sign({ id }, process.env.Secret_Key, {
+    expiresIn: "10d",
+  });
+};
+
+module.exports = {
+  registerEmp,
+  loginEmp,
+  getEmp,
+};
+

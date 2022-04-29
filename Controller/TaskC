@@ -1,0 +1,83 @@
+const asyncHandler = require("express-async-handler");
+const Tasks = require("../model/TaskModle");
+const Emp = require("../model/EmpModle");
+
+//  (GET) /api/Task
+const getTask = asyncHandler(async (req, res) => {
+  const task= await Tasks.find({ emp: req.emp.id });
+  if (!task) {
+    return res.status(404).send("No Task Found");
+  }
+  res.status(200).json({ task });
+});
+
+//  (POST) /api/Task
+const creat_task = asyncHandler(async (req, res) => {
+  const { title, emp, description, id } = req.body;
+  let task = new Tasks({
+    title,
+    description,
+    emp: req.emp.id,
+  });
+  await task.save();
+  if (!task) {
+    res.status(400);
+    throw new Error(" Please Add one Task"); 
+  }
+  res.status(200).json({ task });
+});
+
+// (PUT) /api/Task/:id
+const updateTasks = asyncHandler(async (req, res) => {
+
+  const task = await Tasks.findById(req.params.id);
+  if (!task) {
+    res.status(400);
+    throw new Error("Tasks not Found");
+  }
+  const emp = await Emp.findById(req.emp.id);
+  if (!emp) {
+    res.status(401);
+    throw new Error("Employee not found");
+  }
+  if (task.emp.toString() !== emp.id) {
+    res.status(401);
+    throw new Error("Employee not Authorized");
+  }
+  
+  const updatedTasks= await Tasks.findByIdAndUpdate(
+    req.params.id,
+    req.body,
+    {
+      new: true,
+    }
+  );
+
+  res.status(200).json(updatedTasks);
+});
+
+// ( DELETE) /api/Task/:id
+const deleteTasks = asyncHandler(async (req, res) => {
+  const task = await Tasks.findByIdAndRemove(req.params.id);
+  if (!task) {
+    res.status(400);
+    throw new Error("Task Not Found");
+  }
+  const emp = await Emp.findById(req.emp.id);
+  if (!emp) {
+    res.status(401);
+    throw new Error("Employee not found");
+  }
+  if (task.emp.toString() !== emp.id) {
+    res.status(401);
+    throw new Error("Employee not Authorized");
+  }
+  res.status(200).json("Tasks is deleted");
+});
+
+module.exports = {
+  getTask,
+  creat_task,
+  updateTasks,
+  deleteTasks,
+};

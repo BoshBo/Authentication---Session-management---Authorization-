@@ -1,0 +1,31 @@
+const jwt = require("jsonwebtoken");
+const asyncHandler = require("express-async-handler");
+const Emp = require("../model/EmpModle");
+
+const JwtToken = asyncHandler(async (req, res, next) => {
+  let Token;
+
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith("Bearer")
+  ) {
+    try {
+      Token = req.headers.authorization.split(" ")[1];
+      const decoded = jwt.verify(Token, process.env.Secret_Key);
+      req.emp = await Emp.findById(decoded.id).select("-password");
+      next();
+    } catch (error) {
+      console.log(error);
+      res.status(401);
+      throw new Error("Not Authorized");
+    }
+  }
+  if (!Token) {
+    res.status(401);
+    throw new Error("Not Valid Token");
+  }
+});
+
+module.exports = {
+  JwtToken
+};
